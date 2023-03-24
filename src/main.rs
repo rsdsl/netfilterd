@@ -21,5 +21,8 @@ fn main() -> Result<()> {
     let rule = Rule::new(&postrouting)?.oface("rsppp0")?.masquerade();
     batch.add(&rule, MsgType::Add);
 
-    Ok(batch.send()?)
+    batch.send()?;
+
+    println!("[netfilterd] enable nat");
+    Ok(())
 }
