@@ -42,6 +42,9 @@ fn filter() -> Result<()> {
     let deny_isolated_to_any = Rule::new(&forward)?.iface("eth0.30")?.drop();
     batch.add(&deny_isolated_to_any, MsgType::Add);
 
+    let deny_any_to_isolated = Rule::new(&forward)?.oface("eth0.30")?.drop();
+    batch.add(&deny_any_to_isolated, MsgType::Add);
+
     let allow_established = Rule::new(&forward)?.established()?.accept();
     batch.add(&allow_established, MsgType::Add);
 
