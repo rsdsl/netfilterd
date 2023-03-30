@@ -1,7 +1,8 @@
 use rsdsl_netfilterd::error::Result;
 
 use rustables::{
-    Batch, Chain, ChainPolicy, ChainType, Hook, HookClass, MsgType, ProtocolFamily, Rule, Table,
+    Batch, Chain, ChainPolicy, ChainType, Hook, HookClass, MsgType, Protocol, ProtocolFamily, Rule,
+    Table,
 };
 
 fn nat() -> Result<()> {
@@ -30,6 +31,58 @@ fn filter() -> Result<()> {
 
     let filter = Table::new(ProtocolFamily::Inet).with_name("filter");
     batch.add(&filter, MsgType::Add);
+
+    // +-------------+
+    // | INPUT chain |
+    // +-------------+
+
+    let mut input = Chain::new(&filter).with_name("INPUT");
+
+    input.set_type(ChainType::Filter);
+    input.set_hook(Hook::new(HookClass::In, 0));
+    input.set_policy(ChainPolicy::Accept);
+
+    batch.add(&input, MsgType::Add);
+
+    let allow_established = Rule::new(&input)?.established()?.accept();
+    batch.add(&allow_established, MsgType::Add);
+
+    let allow_icmp4 = Rule::new(&input)?.icmp().accept();
+    batch.add(&allow_icmp4, MsgType::Add);
+
+    let allow_icmp6 = Rule::new(&input)?.icmpv6().accept();
+    batch.add(&allow_icmp6, MsgType::Add);
+
+    let deny_wan4 = Rule::new(&input)?.iface("rsppp0")?.drop();
+    batch.add(&deny_wan4, MsgType::Add);
+
+    let allow_isolated_dhcp = Rule::new(&input)?
+        .iface("eth0.30")?
+        .dport(67, Protocol::UDP)
+        .accept();
+    batch.add(&allow_isolated_dhcp, MsgType::Add);
+
+    let deny_isolated = Rule::new(&input)?.iface("eth0.30")?.drop();
+    batch.add(&deny_isolated, MsgType::Add);
+
+    let allow_untrusted_dhcp = Rule::new(&input)?
+        .iface("eth0.20")?
+        .dport(67, Protocol::UDP)
+        .accept();
+    batch.add(&allow_untrusted_dhcp, MsgType::Add);
+
+    let allow_untrusted_dns = Rule::new(&input)?
+        .iface("eth0.20")?
+        .dport(53, Protocol::UDP)
+        .accept();
+    batch.add(&allow_untrusted_dns, MsgType::Add);
+
+    let deny_untrusted = Rule::new(&input)?.iface("eth0.20")?.drop();
+    batch.add(&deny_untrusted, MsgType::Add);
+
+    // +---------------+
+    // | FORWARD chain |
+    // +---------------+
 
     let mut forward = Chain::new(&filter).with_name("FORWARD");
 
@@ -69,11 +122,11 @@ fn filter() -> Result<()> {
     let allow_any_to_exposed = Rule::new(&forward)?.oface("eth0.40")?.accept();
     batch.add(&allow_any_to_exposed, MsgType::Add);
 
-    let allow_icmp4 = Rule::new(&forward)?.icmp().accept();
-    batch.add(&allow_icmp4, MsgType::Add);
+    let allow_icmp4_to_any = Rule::new(&forward)?.icmp().accept();
+    batch.add(&allow_icmp4_to_any, MsgType::Add);
 
-    let allow_icmp6 = Rule::new(&forward)?.icmpv6().accept();
-    batch.add(&allow_icmp6, MsgType::Add);
+    let allow_icmp6_to_any = Rule::new(&forward)?.icmpv6().accept();
+    batch.add(&allow_icmp6_to_any, MsgType::Add);
 
     batch.send()?;
     Ok(())
