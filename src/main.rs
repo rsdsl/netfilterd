@@ -39,6 +39,9 @@ fn filter() -> Result<()> {
 
     batch.add(&forward, MsgType::Add);
 
+    let deny_isolated_to_any = Rule::new(&forward)?.iface("eth0.30")?.drop();
+    batch.add(&deny_isolated_to_any, MsgType::Add);
+
     let allow_established = Rule::new(&forward)?.established()?.accept();
     batch.add(&allow_established, MsgType::Add);
 
