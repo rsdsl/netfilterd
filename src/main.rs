@@ -11,6 +11,10 @@ fn nat() -> Result<()> {
     let nat = Table::new(ProtocolFamily::Ipv4).with_name("nat");
     batch.add(&nat, MsgType::Add);
 
+    // +-------------------+
+    // | POSTROUTING chain |
+    // +-------------------+
+
     let mut postrouting = Chain::new(&nat).with_name("POSTROUTING");
 
     postrouting.set_type(ChainType::Nat);
@@ -21,6 +25,34 @@ fn nat() -> Result<()> {
 
     let rule = Rule::new(&postrouting)?.oface("rsppp0")?.masquerade();
     batch.add(&rule, MsgType::Add);
+
+    // +------------------+
+    // | PREROUTING chain |
+    // +------------------+
+
+    let mut prerouting = Chain::new(&nat).with_name("PREROUTING");
+
+    prerouting.set_type(ChainType::Nat);
+    prerouting.set_hook(Hook::new(HookClass::PreRouting, -100));
+    prerouting.set_policy(ChainPolicy::Accept);
+
+    batch.add(&prerouting, MsgType::Add);
+
+    for port in 5060..=5080 {
+        let dnat_sip = Rule::new(&prerouting)?
+            .iface("rsppp0")?
+            .dport(port, Protocol::UDP)
+            .dnat("10.128.40.252".parse()?, None);
+        batch.add(&dnat_sip, MsgType::Add);
+    }
+
+    for port in 16384..=16482 {
+        let dnat_rtp = Rule::new(&prerouting)?
+            .iface("rsppp0")?
+            .dport(port, Protocol::UDP)
+            .dnat("10.128.40.252".parse()?, None);
+        batch.add(&dnat_rtp, MsgType::Add);
+    }
 
     batch.send()?;
     Ok(())
