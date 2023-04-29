@@ -133,6 +133,12 @@ fn filter() -> Result<()> {
     let allow_established = Rule::new(&forward)?.established()?.accept();
     batch.add(&allow_established, MsgType::Add);
 
+    let allow_mgmt_to_wan4 = Rule::new(&forward)?
+        .iface("eth0")?
+        .oface("rsppp0")?
+        .accept();
+    batch.add(&allow_mgmt_to_wan4, MsgType::Add);
+
     let allow_trusted_to_wan4 = Rule::new(&forward)?
         .iface("eth0.10")?
         .oface("rsppp0")?
