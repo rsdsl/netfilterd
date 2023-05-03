@@ -393,7 +393,7 @@ checksum = "f162c6dd7b008981e4d40210aca20b4bd0f9b60ca9271061b07f78537722f2e1"
 
 [[package]]
 name = "rsdsl_netfilterd"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "failure",
  "rustables",
@@ -402,8 +402,8 @@ dependencies = [
 
 [[package]]
 name = "rustables"
-version = "0.10.1"
-source = "git+https://github.com/rsdsl/rustables.git#8f8eb7c1c6870e38fd1dcc694c8b74dbc0ef95dd"
+version = "0.11.0"
+source = "git+https://github.com/rsdsl/rustables.git#a78962f91ae04da631de4908851d1d3e7983d032"
 dependencies = [
  "bindgen",
  "bitflags",
@@ -419,7 +419,7 @@ dependencies = [
 [[package]]
 name = "rustables-macros"
 version = "0.1.1"
-source = "git+https://github.com/rsdsl/rustables.git#8f8eb7c1c6870e38fd1dcc694c8b74dbc0ef95dd"
+source = "git+https://github.com/rsdsl/rustables.git#a78962f91ae04da631de4908851d1d3e7983d032"
 dependencies = [
  "once_cell",
  "proc-macro-error",

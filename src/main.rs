@@ -130,6 +130,20 @@ fn filter() -> Result<()> {
     let deny_any_to_isolated = Rule::new(&forward)?.oface("eth0.30")?.drop();
     batch.add(&deny_any_to_isolated, MsgType::Add);
 
+    let clamp_mss_inbound = Rule::new(&forward)?
+        .iface("rsppp0")?
+        .protocol(Protocol::TCP)
+        .syn()?
+        .set_mss(1452);
+    batch.add(&clamp_mss_inbound, MsgType::Add);
+
+    let clamp_mss_outbound = Rule::new(&forward)?
+        .oface("rsppp0")?
+        .protocol(Protocol::TCP)
+        .syn()?
+        .set_mss(1452);
+    batch.add(&clamp_mss_outbound, MsgType::Add);
+
     let allow_established = Rule::new(&forward)?.established()?.accept();
     batch.add(&allow_established, MsgType::Add);
 
