@@ -402,8 +402,8 @@ dependencies = [
 
 [[package]]
 name = "rustables"
-version = "0.12.1"
-source = "git+https://github.com/rsdsl/rustables.git#93724f6b9bac1df223b537f8025fbdbda39bec88"
+version = "0.13.0"
+source = "git+https://github.com/rsdsl/rustables.git#bf3a986d1369de8c8cf5b558591d2d87bebab46e"
 dependencies = [
  "bindgen",
  "bitflags",
@@ -419,7 +419,7 @@ dependencies = [
 [[package]]
 name = "rustables-macros"
 version = "0.1.1"
-source = "git+https://github.com/rsdsl/rustables.git#93724f6b9bac1df223b537f8025fbdbda39bec88"
+source = "git+https://github.com/rsdsl/rustables.git#bf3a986d1369de8c8cf5b558591d2d87bebab46e"
 dependencies = [
  "once_cell",
  "proc-macro-error",

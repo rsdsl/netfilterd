@@ -85,6 +85,9 @@ fn filter() -> Result<()> {
     let allow_icmp6 = Rule::new(&input)?.icmpv6().accept();
     batch.add(&allow_icmp6, MsgType::Add);
 
+    let allow_6in4 = Rule::new(&input)?.ip6in4().accept();
+    batch.add(&allow_6in4, MsgType::Add);
+
     let deny_wan4 = Rule::new(&input)?.iface("rsppp0")?.drop();
     batch.add(&deny_wan4, MsgType::Add);
 
