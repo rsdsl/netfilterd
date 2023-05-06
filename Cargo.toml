@@ -7,5 +7,5 @@ edition = "2021"
 
 [dependencies]
 failure = "0.1.8"
-rustables = { git = "https://github.com/rsdsl/rustables.git", version = "0.11.0" }
+rustables = { git = "https://github.com/rsdsl/rustables.git", version = "0.12.1" }
 thiserror = "1.0"

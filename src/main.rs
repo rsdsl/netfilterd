@@ -134,14 +134,14 @@ fn filter() -> Result<()> {
         .iface("rsppp0")?
         .protocol(Protocol::TCP)
         .syn()?
-        .set_mss(1452);
+        .clamp_mss_to_pmtu();
     batch.add(&clamp_mss_inbound, MsgType::Add);
 
     let clamp_mss_outbound = Rule::new(&forward)?
         .oface("rsppp0")?
         .protocol(Protocol::TCP)
         .syn()?
-        .set_mss(1452);
+        .clamp_mss_to_pmtu();
     batch.add(&clamp_mss_outbound, MsgType::Add);
 
     let allow_established = Rule::new(&forward)?.established()?.accept();
