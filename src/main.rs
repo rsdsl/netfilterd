@@ -91,6 +91,9 @@ fn filter() -> Result<()> {
     let deny_wan4 = Rule::new(&input)?.iface("rsppp0")?.drop();
     batch.add(&deny_wan4, MsgType::Add);
 
+    let deny_wan6 = Rule::new(&input)?.iface("he6in4")?.drop();
+    batch.add(&deny_wan6, MsgType::Add);
+
     let allow_isolated_dhcp = Rule::new(&input)?
         .iface("eth0.30")?
         .dport(67, Protocol::UDP)
@@ -156,11 +159,23 @@ fn filter() -> Result<()> {
         .accept();
     batch.add(&allow_mgmt_to_wan4, MsgType::Add);
 
+    let allow_mgmt_to_wan6 = Rule::new(&forward)?
+        .iface("eth0")?
+        .oface("he6in4")?
+        .accept();
+    batch.add(&allow_mgmt_to_wan6, MsgType::Add);
+
     let allow_trusted_to_wan4 = Rule::new(&forward)?
         .iface("eth0.10")?
         .oface("rsppp0")?
         .accept();
     batch.add(&allow_trusted_to_wan4, MsgType::Add);
+
+    let allow_trusted_to_wan6 = Rule::new(&forward)?
+        .iface("eth0.10")?
+        .oface("he6in4")?
+        .accept();
+    batch.add(&allow_trusted_to_wan6, MsgType::Add);
 
     let allow_untrusted_to_wan4 = Rule::new(&forward)?
         .iface("eth0.20")?
@@ -168,11 +183,23 @@ fn filter() -> Result<()> {
         .accept();
     batch.add(&allow_untrusted_to_wan4, MsgType::Add);
 
+    let allow_untrusted_to_wan6 = Rule::new(&forward)?
+        .iface("eth0.20")?
+        .oface("he6in4")?
+        .accept();
+    batch.add(&allow_untrusted_to_wan6, MsgType::Add);
+
     let allow_exposed_to_wan4 = Rule::new(&forward)?
         .iface("eth0.40")?
         .oface("rsppp0")?
         .accept();
     batch.add(&allow_exposed_to_wan4, MsgType::Add);
+
+    let allow_exposed_to_wan6 = Rule::new(&forward)?
+        .iface("eth0.40")?
+        .oface("he6in4")?
+        .accept();
+    batch.add(&allow_exposed_to_wan6, MsgType::Add);
 
     let allow_any_to_exposed = Rule::new(&forward)?.oface("eth0.40")?.accept();
     batch.add(&allow_any_to_exposed, MsgType::Add);
