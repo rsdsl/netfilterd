@@ -136,19 +136,33 @@ fn filter() -> Result<()> {
     let deny_any_to_isolated = Rule::new(&forward)?.oface("eth0.30")?.drop();
     batch.add(&deny_any_to_isolated, MsgType::Add);
 
-    let clamp_mss_inbound = Rule::new(&forward)?
+    let clamp_mss_inbound4 = Rule::new(&forward)?
         .iface("rsppp0")?
         .protocol(Protocol::TCP)
         .syn()?
         .clamp_mss_to_pmtu();
-    batch.add(&clamp_mss_inbound, MsgType::Add);
+    batch.add(&clamp_mss_inbound4, MsgType::Add);
 
-    let clamp_mss_outbound = Rule::new(&forward)?
+    let clamp_mss_inbound6 = Rule::new(&forward)?
+        .iface("he6in4")?
+        .protocol(Protocol::TCP)
+        .syn()?
+        .clamp_mss_to_pmtu();
+    batch.add(&clamp_mss_inbound6, MsgType::Add);
+
+    let clamp_mss_outbound4 = Rule::new(&forward)?
         .oface("rsppp0")?
         .protocol(Protocol::TCP)
         .syn()?
         .clamp_mss_to_pmtu();
-    batch.add(&clamp_mss_outbound, MsgType::Add);
+    batch.add(&clamp_mss_outbound4, MsgType::Add);
+
+    let clamp_mss_outbound6 = Rule::new(&forward)?
+        .oface("he6in4")?
+        .protocol(Protocol::TCP)
+        .syn()?
+        .clamp_mss_to_pmtu();
+    batch.add(&clamp_mss_outbound6, MsgType::Add);
 
     let allow_established = Rule::new(&forward)?.established()?.accept();
     batch.add(&allow_established, MsgType::Add);
