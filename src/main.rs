@@ -1,5 +1,8 @@
 use rsdsl_netfilterd::error::Result;
 
+use std::thread;
+use std::time::Duration;
+
 use rustables::{
     Batch, Chain, ChainPolicy, ChainType, Hook, HookClass, MsgType, Protocol, ProtocolFamily, Rule,
     Table,
@@ -23,7 +26,7 @@ fn nat() -> Result<()> {
 
     batch.add(&postrouting, MsgType::Add);
 
-    let rule = Rule::new(&postrouting)?.oface("rsppp0")?.masquerade();
+    let rule = Rule::new(&postrouting)?.oface("ppp0")?.masquerade();
     batch.add(&rule, MsgType::Add);
 
     // +------------------+
@@ -40,7 +43,7 @@ fn nat() -> Result<()> {
 
     for port in 5060..=5080 {
         let dnat_sip = Rule::new(&prerouting)?
-            .iface("rsppp0")?
+            .iface("ppp0")?
             .dport(port, Protocol::UDP)
             .dnat("10.128.40.252".parse()?, None);
         batch.add(&dnat_sip, MsgType::Add);
@@ -48,7 +51,7 @@ fn nat() -> Result<()> {
 
     for port in 16384..=16482 {
         let dnat_rtp = Rule::new(&prerouting)?
-            .iface("rsppp0")?
+            .iface("ppp0")?
             .dport(port, Protocol::UDP)
             .dnat("10.128.40.252".parse()?, None);
         batch.add(&dnat_rtp, MsgType::Add);
@@ -88,7 +91,7 @@ fn filter() -> Result<()> {
     let allow_6in4 = Rule::new(&input)?.ip6in4().accept();
     batch.add(&allow_6in4, MsgType::Add);
 
-    let deny_wan4 = Rule::new(&input)?.iface("rsppp0")?.drop();
+    let deny_wan4 = Rule::new(&input)?.iface("ppp0")?.drop();
     batch.add(&deny_wan4, MsgType::Add);
 
     let deny_wan6 = Rule::new(&input)?.iface("he6in4")?.drop();
@@ -137,7 +140,7 @@ fn filter() -> Result<()> {
     batch.add(&deny_any_to_isolated, MsgType::Add);
 
     let clamp_mss_inbound4 = Rule::new(&forward)?
-        .iface("rsppp0")?
+        .iface("ppp0")?
         .protocol(Protocol::TCP)
         .syn()?
         .clamp_mss_to_pmtu();
@@ -151,7 +154,7 @@ fn filter() -> Result<()> {
     batch.add(&clamp_mss_inbound6, MsgType::Add);
 
     let clamp_mss_outbound4 = Rule::new(&forward)?
-        .oface("rsppp0")?
+        .oface("ppp0")?
         .protocol(Protocol::TCP)
         .syn()?
         .clamp_mss_to_pmtu();
@@ -167,10 +170,7 @@ fn filter() -> Result<()> {
     let allow_established = Rule::new(&forward)?.established()?.accept();
     batch.add(&allow_established, MsgType::Add);
 
-    let allow_mgmt_to_wan4 = Rule::new(&forward)?
-        .iface("eth0")?
-        .oface("rsppp0")?
-        .accept();
+    let allow_mgmt_to_wan4 = Rule::new(&forward)?.iface("eth0")?.oface("ppp0")?.accept();
     batch.add(&allow_mgmt_to_wan4, MsgType::Add);
 
     let allow_mgmt_to_wan6 = Rule::new(&forward)?
@@ -181,7 +181,7 @@ fn filter() -> Result<()> {
 
     let allow_trusted_to_wan4 = Rule::new(&forward)?
         .iface("eth0.10")?
-        .oface("rsppp0")?
+        .oface("ppp0")?
         .accept();
     batch.add(&allow_trusted_to_wan4, MsgType::Add);
 
@@ -193,7 +193,7 @@ fn filter() -> Result<()> {
 
     let allow_untrusted_to_wan4 = Rule::new(&forward)?
         .iface("eth0.20")?
-        .oface("rsppp0")?
+        .oface("ppp0")?
         .accept();
     batch.add(&allow_untrusted_to_wan4, MsgType::Add);
 
@@ -205,7 +205,7 @@ fn filter() -> Result<()> {
 
     let allow_exposed_to_wan4 = Rule::new(&forward)?
         .iface("eth0.40")?
-        .oface("rsppp0")?
+        .oface("ppp0")?
         .accept();
     batch.add(&allow_exposed_to_wan4, MsgType::Add);
 
@@ -245,5 +245,7 @@ fn main() -> Result<()> {
         }
     }
 
-    Ok(())
+    loop {
+        thread::sleep(Duration::MAX);
+    }
 }
