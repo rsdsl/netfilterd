@@ -230,17 +230,17 @@ fn filter() -> Result<()> {
 
 fn main() -> Result<()> {
     match nat() {
-        Ok(_) => println!("[netfilterd] enable nat"),
+        Ok(_) => println!("enable nat"),
         Err(e) => {
-            println!("[netfilterd] can't enable nat: {}", e);
+            println!("can't enable nat: {}", e);
             return Err(e);
         }
     }
 
     match filter() {
-        Ok(_) => println!("[netfilterd] activate acl"),
+        Ok(_) => println!("activate acl"),
         Err(e) => {
-            println!("[netfilterd] can't activate acl: {}", e);
+            println!("can't activate acl: {}", e);
             return Err(e);
         }
     }
