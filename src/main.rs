@@ -1,5 +1,8 @@
 use rsdsl_netfilterd::error::Result;
 
+use std::thread;
+use std::time::Duration;
+
 use rustables::{
     Batch, Chain, ChainPolicy, ChainType, Hook, HookClass, MsgType, Protocol, ProtocolFamily, Rule,
     Table,
@@ -245,5 +248,7 @@ fn main() -> Result<()> {
         }
     }
 
-    Ok(())
+    loop {
+        thread::sleep(Duration::MAX);
+    }
 }
