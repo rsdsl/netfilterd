@@ -91,11 +91,17 @@ fn filter() -> Result<()> {
     let allow_6in4 = Rule::new(&input)?.ip6in4().accept();
     batch.add(&allow_6in4, MsgType::Add);
 
-    let deny_wan4 = Rule::new(&input)?.iface("ppp0")?.drop();
-    batch.add(&deny_wan4, MsgType::Add);
+    let allow_wan_dhcpv6 = Rule::new(&input)?
+        .iface("ppp0")?
+        .dport(546, Protocol::UDP)
+        .accept();
+    batch.add(&allow_wan_dhcpv6, MsgType::Add);
 
-    let deny_wan6 = Rule::new(&input)?.iface("he6in4")?.drop();
-    batch.add(&deny_wan6, MsgType::Add);
+    let deny_wan = Rule::new(&input)?.iface("ppp0")?.drop();
+    batch.add(&deny_wan, MsgType::Add);
+
+    let deny_wan6in4 = Rule::new(&input)?.iface("he6in4")?.drop();
+    batch.add(&deny_wan6in4, MsgType::Add);
 
     let allow_isolated_dhcp = Rule::new(&input)?
         .iface("eth0.30")?
@@ -139,81 +145,81 @@ fn filter() -> Result<()> {
     let deny_any_to_isolated = Rule::new(&forward)?.oface("eth0.30")?.drop();
     batch.add(&deny_any_to_isolated, MsgType::Add);
 
-    let clamp_mss_inbound4 = Rule::new(&forward)?
+    let clamp_mss_inbound = Rule::new(&forward)?
         .iface("ppp0")?
         .protocol(Protocol::TCP)
         .syn()?
         .clamp_mss_to_pmtu();
-    batch.add(&clamp_mss_inbound4, MsgType::Add);
+    batch.add(&clamp_mss_inbound, MsgType::Add);
 
-    let clamp_mss_inbound6 = Rule::new(&forward)?
+    let clamp_mss_inbound6in4 = Rule::new(&forward)?
         .iface("he6in4")?
         .protocol(Protocol::TCP)
         .syn()?
         .clamp_mss_to_pmtu();
-    batch.add(&clamp_mss_inbound6, MsgType::Add);
+    batch.add(&clamp_mss_inbound6in4, MsgType::Add);
 
-    let clamp_mss_outbound4 = Rule::new(&forward)?
+    let clamp_mss_outbound = Rule::new(&forward)?
         .oface("ppp0")?
         .protocol(Protocol::TCP)
         .syn()?
         .clamp_mss_to_pmtu();
-    batch.add(&clamp_mss_outbound4, MsgType::Add);
+    batch.add(&clamp_mss_outbound, MsgType::Add);
 
-    let clamp_mss_outbound6 = Rule::new(&forward)?
+    let clamp_mss_outbound6in4 = Rule::new(&forward)?
         .oface("he6in4")?
         .protocol(Protocol::TCP)
         .syn()?
         .clamp_mss_to_pmtu();
-    batch.add(&clamp_mss_outbound6, MsgType::Add);
+    batch.add(&clamp_mss_outbound6in4, MsgType::Add);
 
     let allow_established = Rule::new(&forward)?.established()?.accept();
     batch.add(&allow_established, MsgType::Add);
 
-    let allow_mgmt_to_wan4 = Rule::new(&forward)?.iface("eth0")?.oface("ppp0")?.accept();
-    batch.add(&allow_mgmt_to_wan4, MsgType::Add);
+    let allow_mgmt_to_wan = Rule::new(&forward)?.iface("eth0")?.oface("ppp0")?.accept();
+    batch.add(&allow_mgmt_to_wan, MsgType::Add);
 
-    let allow_mgmt_to_wan6 = Rule::new(&forward)?
+    let allow_mgmt_to_wan6in4 = Rule::new(&forward)?
         .iface("eth0")?
         .oface("he6in4")?
         .accept();
-    batch.add(&allow_mgmt_to_wan6, MsgType::Add);
+    batch.add(&allow_mgmt_to_wan6in4, MsgType::Add);
 
-    let allow_trusted_to_wan4 = Rule::new(&forward)?
+    let allow_trusted_to_wan = Rule::new(&forward)?
         .iface("eth0.10")?
         .oface("ppp0")?
         .accept();
-    batch.add(&allow_trusted_to_wan4, MsgType::Add);
+    batch.add(&allow_trusted_to_wan, MsgType::Add);
 
-    let allow_trusted_to_wan6 = Rule::new(&forward)?
+    let allow_trusted_to_wan6in4 = Rule::new(&forward)?
         .iface("eth0.10")?
         .oface("he6in4")?
         .accept();
-    batch.add(&allow_trusted_to_wan6, MsgType::Add);
+    batch.add(&allow_trusted_to_wan6in4, MsgType::Add);
 
-    let allow_untrusted_to_wan4 = Rule::new(&forward)?
+    let allow_untrusted_to_wan = Rule::new(&forward)?
         .iface("eth0.20")?
         .oface("ppp0")?
         .accept();
-    batch.add(&allow_untrusted_to_wan4, MsgType::Add);
+    batch.add(&allow_untrusted_to_wan, MsgType::Add);
 
-    let allow_untrusted_to_wan6 = Rule::new(&forward)?
+    let allow_untrusted_to_wan6in4 = Rule::new(&forward)?
         .iface("eth0.20")?
         .oface("he6in4")?
         .accept();
-    batch.add(&allow_untrusted_to_wan6, MsgType::Add);
+    batch.add(&allow_untrusted_to_wan6in4, MsgType::Add);
 
-    let allow_exposed_to_wan4 = Rule::new(&forward)?
+    let allow_exposed_to_wan = Rule::new(&forward)?
         .iface("eth0.40")?
         .oface("ppp0")?
         .accept();
-    batch.add(&allow_exposed_to_wan4, MsgType::Add);
+    batch.add(&allow_exposed_to_wan, MsgType::Add);
 
-    let allow_exposed_to_wan6 = Rule::new(&forward)?
+    let allow_exposed_to_wan6in4 = Rule::new(&forward)?
         .iface("eth0.40")?
         .oface("he6in4")?
         .accept();
-    batch.add(&allow_exposed_to_wan6, MsgType::Add);
+    batch.add(&allow_exposed_to_wan6in4, MsgType::Add);
 
     let allow_any_to_exposed = Rule::new(&forward)?.oface("eth0.40")?.accept();
     batch.add(&allow_any_to_exposed, MsgType::Add);
