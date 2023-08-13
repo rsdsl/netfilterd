@@ -88,6 +88,9 @@ fn filter() -> Result<()> {
     let allow_icmp6 = Rule::new(&input)?.icmpv6().accept();
     batch.add(&allow_icmp6, MsgType::Add);
 
+    let allow_4in6 = Rule::new(&input)?.ip4in6().accept();
+    batch.add(&allow_4in6, MsgType::Add);
+
     let allow_6in4 = Rule::new(&input)?.ip6in4().accept();
     batch.add(&allow_6in4, MsgType::Add);
 
@@ -99,6 +102,9 @@ fn filter() -> Result<()> {
 
     let deny_wan = Rule::new(&input)?.iface("ppp0")?.drop();
     batch.add(&deny_wan, MsgType::Add);
+
+    let deny_wan_dslite = Rule::new(&input)?.iface("dslite0")?.drop();
+    batch.add(&deny_wan_dslite, MsgType::Add);
 
     let deny_wan6in4 = Rule::new(&input)?.iface("he6in4")?.drop();
     batch.add(&deny_wan6in4, MsgType::Add);
@@ -152,6 +158,13 @@ fn filter() -> Result<()> {
         .clamp_mss_to_pmtu();
     batch.add(&clamp_mss_inbound, MsgType::Add);
 
+    let clamp_mss_inbound_dslite = Rule::new(&forward)?
+        .iface("dslite0")?
+        .protocol(Protocol::TCP)
+        .syn()?
+        .clamp_mss_to_pmtu();
+    batch.add(&clamp_mss_inbound_dslite, MsgType::Add);
+
     let clamp_mss_inbound6in4 = Rule::new(&forward)?
         .iface("he6in4")?
         .protocol(Protocol::TCP)
@@ -166,6 +179,13 @@ fn filter() -> Result<()> {
         .clamp_mss_to_pmtu();
     batch.add(&clamp_mss_outbound, MsgType::Add);
 
+    let clamp_mss_outbound_dslite = Rule::new(&forward)?
+        .oface("dslite0")?
+        .protocol(Protocol::TCP)
+        .syn()?
+        .clamp_mss_to_pmtu();
+    batch.add(&clamp_mss_outbound_dslite, MsgType::Add);
+
     let clamp_mss_outbound6in4 = Rule::new(&forward)?
         .oface("he6in4")?
         .protocol(Protocol::TCP)
@@ -179,6 +199,12 @@ fn filter() -> Result<()> {
     let allow_mgmt_to_wan = Rule::new(&forward)?.iface("eth0")?.oface("ppp0")?.accept();
     batch.add(&allow_mgmt_to_wan, MsgType::Add);
 
+    let allow_mgmt_to_wan_dslite = Rule::new(&forward)?
+        .iface("eth0")?
+        .oface("dslite0")?
+        .accept();
+    batch.add(&allow_mgmt_to_wan_dslite, MsgType::Add);
+
     let allow_mgmt_to_wan6in4 = Rule::new(&forward)?
         .iface("eth0")?
         .oface("he6in4")?
@@ -190,6 +216,12 @@ fn filter() -> Result<()> {
         .oface("ppp0")?
         .accept();
     batch.add(&allow_trusted_to_wan, MsgType::Add);
+
+    let allow_trusted_to_wan_dslite = Rule::new(&forward)?
+        .iface("eth0.10")?
+        .oface("dslite0")?
+        .accept();
+    batch.add(&allow_trusted_to_wan_dslite, MsgType::Add);
 
     let allow_trusted_to_wan6in4 = Rule::new(&forward)?
         .iface("eth0.10")?
@@ -203,6 +235,12 @@ fn filter() -> Result<()> {
         .accept();
     batch.add(&allow_untrusted_to_wan, MsgType::Add);
 
+    let allow_untrusted_to_wan_dslite = Rule::new(&forward)?
+        .iface("eth0.20")?
+        .oface("dslite0")?
+        .accept();
+    batch.add(&allow_untrusted_to_wan_dslite, MsgType::Add);
+
     let allow_untrusted_to_wan6in4 = Rule::new(&forward)?
         .iface("eth0.20")?
         .oface("he6in4")?
@@ -214,6 +252,12 @@ fn filter() -> Result<()> {
         .oface("ppp0")?
         .accept();
     batch.add(&allow_exposed_to_wan, MsgType::Add);
+
+    let allow_exposed_to_wan_dslite = Rule::new(&forward)?
+        .iface("eth0.40")?
+        .oface("dslite0")?
+        .accept();
+    batch.add(&allow_exposed_to_wan_dslite, MsgType::Add);
 
     let allow_exposed_to_wan6in4 = Rule::new(&forward)?
         .iface("eth0.40")?

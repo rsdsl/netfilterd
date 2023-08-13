@@ -1,11 +1,11 @@
 [package]
 name = "rsdsl_netfilterd"
-version = "0.4.0"
+version = "0.5.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 failure = "0.1.8"
-rustables = { git = "https://github.com/rsdsl/rustables.git", version = "0.13.0" }
+rustables = { git = "https://github.com/rsdsl/rustables.git", version = "0.14.0" }
 thiserror = "1.0"
