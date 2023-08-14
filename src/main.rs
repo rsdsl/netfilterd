@@ -1,8 +1,10 @@
 use rsdsl_netfilterd::error::Result;
 
+use std::net::Ipv4Addr;
 use std::thread;
 use std::time::Duration;
 
+use ipnetwork::Ipv4Network;
 use rustables::{
     Batch, Chain, ChainPolicy, ChainType, Hook, HookClass, MsgType, Protocol, ProtocolFamily, Rule,
     Table,
@@ -26,8 +28,14 @@ fn nat() -> Result<()> {
 
     batch.add(&postrouting, MsgType::Add);
 
-    let rule = Rule::new(&postrouting)?.oface("ppp0")?.masquerade();
-    batch.add(&rule, MsgType::Add);
+    let masq_outbound_modem = Rule::new(&postrouting)?
+        .oface("eth1")?
+        .dnetwork(Ipv4Network::new(Ipv4Addr::new(192, 168, 1, 0), 24)?.into())?
+        .masquerade();
+    batch.add(&masq_outbound_modem, MsgType::Add);
+
+    let masq_outbound_wan = Rule::new(&postrouting)?.oface("ppp0")?.masquerade();
+    batch.add(&masq_outbound_wan, MsgType::Add);
 
     // +------------------+
     // | PREROUTING chain |
