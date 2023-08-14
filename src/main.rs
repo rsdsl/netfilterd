@@ -204,6 +204,9 @@ fn filter() -> Result<()> {
     let allow_established = Rule::new(&forward)?.established()?.accept();
     batch.add(&allow_established, MsgType::Add);
 
+    let allow_mgmt_to_modem = Rule::new(&forward)?.iface("eth0")?.oface("eth1")?.accept();
+    batch.add(&allow_mgmt_to_modem, MsgType::Add);
+
     let allow_mgmt_to_wan = Rule::new(&forward)?.iface("eth0")?.oface("ppp0")?.accept();
     batch.add(&allow_mgmt_to_wan, MsgType::Add);
 
@@ -218,6 +221,12 @@ fn filter() -> Result<()> {
         .oface("he6in4")?
         .accept();
     batch.add(&allow_mgmt_to_wan6in4, MsgType::Add);
+
+    let allow_trusted_to_modem = Rule::new(&forward)?
+        .iface("eth0.10")?
+        .oface("eth1")?
+        .accept();
+    batch.add(&allow_trusted_to_modem, MsgType::Add);
 
     let allow_trusted_to_wan = Rule::new(&forward)?
         .iface("eth0.10")?
