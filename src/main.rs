@@ -296,18 +296,20 @@ fn filter() -> Result<()> {
         .accept();
     batch.add(&allow_exposed_to_wan6in4, MsgType::Add);
 
-    let allow_exposed_to_any_sip = Rule::new(&forward)?
+    let allow_exposed_to_vpn_sip = Rule::new(&forward)?
         .iface("eth0.40")?
+        .oface("wg0")?
         .dport(5060, Protocol::UDP)
         .accept();
-    batch.add(&allow_exposed_to_any_sip, MsgType::Add);
+    batch.add(&allow_exposed_to_vpn_sip, MsgType::Add);
 
     for port in 16384..=16482 {
-        let allow_exposed_to_any_rtp = Rule::new(&forward)?
+        let allow_exposed_to_vpn_rtp = Rule::new(&forward)?
             .iface("eth0.40")?
+            .oface("wg0")?
             .dport(port, Protocol::UDP)
             .accept();
-        batch.add(&allow_exposed_to_any_rtp, MsgType::Add);
+        batch.add(&allow_exposed_to_vpn_rtp, MsgType::Add);
     }
 
     let allow_vpn_to_modem = Rule::new(&forward)?.iface("wg0")?.oface("eth1")?.accept();
