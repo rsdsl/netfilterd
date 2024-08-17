@@ -108,6 +108,15 @@ fn filter() -> Result<()> {
         .accept();
     batch.add(&allow_wan_dhcpv6, MsgType::Add);
 
+    let deny_isolated_vpn = Rule::new(&input)?
+        .iface("eth0.30")?
+        .dport(51820, Protocol::UDP)
+        .drop();
+    batch.add(&deny_isolated_vpn, MsgType::Add);
+
+    let allow_any_vpn = Rule::new(&input)?.dport(51820, Protocol::UDP).accept();
+    batch.add(&allow_any_vpn, MsgType::Add);
+
     let deny_wan = Rule::new(&input)?.iface("ppp0")?.drop();
     batch.add(&deny_wan, MsgType::Add);
 
