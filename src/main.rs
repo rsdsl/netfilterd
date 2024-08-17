@@ -180,6 +180,13 @@ fn filter() -> Result<()> {
         .clamp_mss_to_pmtu();
     batch.add(&clamp_mss_inbound6in4, MsgType::Add);
 
+    let clamp_mss_inbound_vpn = Rule::new(&forward)?
+        .iface("wg0")?
+        .protocol(Protocol::TCP)
+        .syn()?
+        .clamp_mss_to_pmtu();
+    batch.add(&clamp_mss_inbound_vpn, MsgType::Add);
+
     let clamp_mss_outbound = Rule::new(&forward)?
         .oface("ppp0")?
         .protocol(Protocol::TCP)
@@ -200,6 +207,13 @@ fn filter() -> Result<()> {
         .syn()?
         .clamp_mss_to_pmtu();
     batch.add(&clamp_mss_outbound6in4, MsgType::Add);
+
+    let clamp_mss_outbound_vpn = Rule::new(&forward)?
+        .oface("wg0")?
+        .protocol(Protocol::TCP)
+        .syn()?
+        .clamp_mss_to_pmtu();
+    batch.add(&clamp_mss_outbound_vpn, MsgType::Add);
 
     let allow_established = Rule::new(&forward)?.established()?.accept();
     batch.add(&allow_established, MsgType::Add);
@@ -281,6 +295,37 @@ fn filter() -> Result<()> {
         .oface("he6in4")?
         .accept();
     batch.add(&allow_exposed_to_wan6in4, MsgType::Add);
+
+    let allow_exposed_to_vpn_sip = Rule::new(&forward)?
+        .iface("eth0.40")?
+        .oface("wg0")?
+        .dport(5060, Protocol::UDP)
+        .accept();
+    batch.add(&allow_exposed_to_vpn_sip, MsgType::Add);
+
+    for port in 16384..=16482 {
+        let allow_exposed_to_vpn_rtp = Rule::new(&forward)?
+            .iface("eth0.40")?
+            .oface("wg0")?
+            .dport(port, Protocol::UDP)
+            .accept();
+        batch.add(&allow_exposed_to_vpn_rtp, MsgType::Add);
+    }
+
+    let allow_vpn_to_modem = Rule::new(&forward)?.iface("wg0")?.oface("eth1")?.accept();
+    batch.add(&allow_vpn_to_modem, MsgType::Add);
+
+    let allow_vpn_to_wan = Rule::new(&forward)?.iface("wg0")?.oface("ppp0")?.accept();
+    batch.add(&allow_vpn_to_wan, MsgType::Add);
+
+    let allow_vpn_to_wan_dslite = Rule::new(&forward)?
+        .iface("wg0")?
+        .oface("dslite0")?
+        .accept();
+    batch.add(&allow_vpn_to_wan_dslite, MsgType::Add);
+
+    let allow_vpn_to_wan6in4 = Rule::new(&forward)?.iface("wg0")?.oface("he6in4")?.accept();
+    batch.add(&allow_vpn_to_wan6in4, MsgType::Add);
 
     let allow_any_to_exposed = Rule::new(&forward)?.oface("eth0.40")?.accept();
     batch.add(&allow_any_to_exposed, MsgType::Add);
