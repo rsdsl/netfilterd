@@ -378,7 +378,7 @@ checksum = "436b050e76ed2903236f032a59761c1eb99e1b0aead2c257922771dab1fc8c78"
 
 [[package]]
 name = "rsdsl_netfilterd"
-version = "0.6.0"
+version = "0.7.0-dev"
 dependencies = [
  "failure",
  "ipnetwork",
