@@ -8,5 +8,8 @@ edition = "2021"
 [dependencies]
 failure = "0.1.8"
 ipnetwork = "0.20.0"
+rsdsl_pd_config = { git = "https://github.com/rsdsl/pd_config.git", version = "0.1.0" }
 rustables = { git = "https://github.com/rsdsl/rustables.git", version = "0.14.0" }
+serde_json = "1.0"
+signal-hook = "0.3.17"
 thiserror = "1.0"
