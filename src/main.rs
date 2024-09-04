@@ -14,6 +14,7 @@ use rustables::{
 };
 use signal_hook::{consts::SIGUSR1, iterator::Signals};
 
+const GUA: Ipv6Addr = Ipv6Addr::new(0x2000, 0, 0, 0, 0, 0, 0, 0);
 const ULA: Ipv6Addr = Ipv6Addr::new(0xfd0b, 0x9272, 0x534e, 0, 0, 0, 0, 0);
 const VPN_ULA: Ipv6Addr = Ipv6Addr::new(0xfd0b, 0x9272, 0x534e, 6, 0, 0, 0, 0);
 const EXPOSED_VPN_ULA: Ipv6Addr = Ipv6Addr::new(0xfd0b, 0x9272, 0x534e, 7, 0, 0, 0, 0);
@@ -414,6 +415,7 @@ fn filter() -> Result<()> {
 }
 
 fn enable_npt(prefix: Ipv6Addr) -> Result<Npt> {
+    let gua_net = IpNetwork::V6(Ipv6Network::new(GUA, 3).unwrap());
     let vpn_net = IpNetwork::V6(Ipv6Network::new(VPN_ULA, 64).unwrap());
     let exposed_vpn_net: IpNetwork = IpNetwork::V6(Ipv6Network::new(EXPOSED_VPN_ULA, 64).unwrap());
 
@@ -450,8 +452,8 @@ fn enable_npt(prefix: Ipv6Addr) -> Result<Npt> {
     batch.add(&postrouting, MsgType::Add);
 
     let map_vpn_to_gua = Rule::new(&postrouting)?
-        .oface("ppp0")?
         .snetwork(vpn_net)?
+        .dnetwork(gua_net)?
         .with_expr(
             HighLevelPayload::Network(NetworkHeaderField::IPv6(IPv6HeaderField::Saddr)).build(),
         )
@@ -466,8 +468,8 @@ fn enable_npt(prefix: Ipv6Addr) -> Result<Npt> {
     batch.add(&map_vpn_to_gua, MsgType::Add);
 
     let map_exposed_vpn_to_gua = Rule::new(&postrouting)?
-        .oface("ppp0")?
         .snetwork(exposed_vpn_net)?
+        .dnetwork(gua_net)?
         .with_expr(
             HighLevelPayload::Network(NetworkHeaderField::IPv6(IPv6HeaderField::Saddr)).build(),
         )
@@ -497,7 +499,6 @@ fn enable_npt(prefix: Ipv6Addr) -> Result<Npt> {
     batch.add(&prerouting, MsgType::Add);
 
     let map_gua_to_vpn = Rule::new(&prerouting)?
-        .iface("ppp0")?
         .dnetwork(vpn_subnet)?
         .with_expr(
             HighLevelPayload::Network(NetworkHeaderField::IPv6(IPv6HeaderField::Daddr)).build(),
@@ -513,7 +514,6 @@ fn enable_npt(prefix: Ipv6Addr) -> Result<Npt> {
     batch.add(&map_gua_to_vpn, MsgType::Add);
 
     let map_gua_to_exposed_vpn = Rule::new(&prerouting)?
-        .iface("ppp0")?
         .dnetwork(exposed_vpn_subnet)?
         .with_expr(
             HighLevelPayload::Network(NetworkHeaderField::IPv6(IPv6HeaderField::Daddr)).build(),
@@ -540,6 +540,7 @@ fn enable_npt(prefix: Ipv6Addr) -> Result<Npt> {
 }
 
 fn update_npt(npt: &mut Npt, prefix: Ipv6Addr) -> Result<()> {
+    let gua_net = IpNetwork::V6(Ipv6Network::new(GUA, 3).unwrap());
     let vpn_net = IpNetwork::V6(Ipv6Network::new(VPN_ULA, 64).unwrap());
     let exposed_vpn_net: IpNetwork = IpNetwork::V6(Ipv6Network::new(EXPOSED_VPN_ULA, 64).unwrap());
 
@@ -570,8 +571,8 @@ fn update_npt(npt: &mut Npt, prefix: Ipv6Addr) -> Result<()> {
     // +-------------------+
 
     npt.map_vpn_to_gua = Rule::new(&npt.postrouting)?
-        .oface("ppp0")?
         .snetwork(vpn_net)?
+        .dnetwork(gua_net)?
         .with_expr(
             HighLevelPayload::Network(NetworkHeaderField::IPv6(IPv6HeaderField::Saddr)).build(),
         )
@@ -586,8 +587,8 @@ fn update_npt(npt: &mut Npt, prefix: Ipv6Addr) -> Result<()> {
     batch.add(&npt.map_vpn_to_gua, MsgType::Add);
 
     npt.map_exposed_vpn_to_gua = Rule::new(&npt.postrouting)?
-        .oface("ppp0")?
         .snetwork(exposed_vpn_net)?
+        .dnetwork(gua_net)?
         .with_expr(
             HighLevelPayload::Network(NetworkHeaderField::IPv6(IPv6HeaderField::Saddr)).build(),
         )
@@ -609,7 +610,6 @@ fn update_npt(npt: &mut Npt, prefix: Ipv6Addr) -> Result<()> {
     // +------------------+
 
     npt.map_gua_to_vpn = Rule::new(&npt.prerouting)?
-        .iface("ppp0")?
         .dnetwork(vpn_subnet)?
         .with_expr(
             HighLevelPayload::Network(NetworkHeaderField::IPv6(IPv6HeaderField::Daddr)).build(),
@@ -625,7 +625,6 @@ fn update_npt(npt: &mut Npt, prefix: Ipv6Addr) -> Result<()> {
     batch.add(&npt.map_gua_to_vpn, MsgType::Add);
 
     npt.map_gua_to_exposed_vpn = Rule::new(&npt.prerouting)?
-        .iface("ppp0")?
         .dnetwork(exposed_vpn_subnet)?
         .with_expr(
             HighLevelPayload::Network(NetworkHeaderField::IPv6(IPv6HeaderField::Daddr)).build(),
