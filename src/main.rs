@@ -199,13 +199,22 @@ fn filter() -> Result<()> {
         .drop();
     batch.add(&deny_wan_dslite_diag, MsgType::Add);
 
-    let deny_wan_dslite_dns = Rule::new(&input)?.dport(53, Protocol::UDP).drop();
+    let deny_wan_dslite_dns = Rule::new(&input)?
+        .iface("dslite0")?
+        .dport(53, Protocol::UDP)
+        .drop();
     batch.add(&deny_wan_dslite_dns, MsgType::Add);
 
-    let deny_wan_dslite_dhcpv4 = Rule::new(&input)?.dport(67, Protocol::UDP).drop();
+    let deny_wan_dslite_dhcpv4 = Rule::new(&input)?
+        .iface("dslite0")?
+        .dport(67, Protocol::UDP)
+        .drop();
     batch.add(&deny_wan_dslite_dhcpv4, MsgType::Add);
 
-    let deny_wan_dslite_dhcpv6 = Rule::new(&input)?.dport(547, Protocol::UDP).drop();
+    let deny_wan_dslite_dhcpv6 = Rule::new(&input)?
+        .iface("dslite0")?
+        .dport(547, Protocol::UDP)
+        .drop();
     batch.add(&deny_wan_dslite_dhcpv6, MsgType::Add);
 
     let deny_wan6in4_netdump = Rule::new(&input)?
@@ -226,13 +235,22 @@ fn filter() -> Result<()> {
         .drop();
     batch.add(&deny_wan6in4_diag, MsgType::Add);
 
-    let deny_wan6in4_dns = Rule::new(&input)?.dport(53, Protocol::UDP).drop();
+    let deny_wan6in4_dns = Rule::new(&input)?
+        .iface("he6in4")?
+        .dport(53, Protocol::UDP)
+        .drop();
     batch.add(&deny_wan6in4_dns, MsgType::Add);
 
-    let deny_wan6in4_dhcpv4 = Rule::new(&input)?.dport(67, Protocol::UDP).drop();
+    let deny_wan6in4_dhcpv4 = Rule::new(&input)?
+        .iface("he6in4")?
+        .dport(67, Protocol::UDP)
+        .drop();
     batch.add(&deny_wan6in4_dhcpv4, MsgType::Add);
 
-    let deny_wan6in4_dhcpv6 = Rule::new(&input)?.dport(547, Protocol::UDP).drop();
+    let deny_wan6in4_dhcpv6 = Rule::new(&input)?
+        .iface("he6in4")?
+        .dport(547, Protocol::UDP)
+        .drop();
     batch.add(&deny_wan6in4_dhcpv6, MsgType::Add);
 
     let allow_isolated_dhcp = Rule::new(&input)?
