@@ -157,12 +157,6 @@ fn filter() -> Result<()> {
         .drop();
     batch.add(&deny_wan_admin, MsgType::Add);
 
-    let deny_wan_diag = Rule::new(&input)?
-        .iface("ppp0")?
-        .dport(12808, Protocol::TCP)
-        .drop();
-    batch.add(&deny_wan_diag, MsgType::Add);
-
     let deny_wan_dns = Rule::new(&input)?
         .iface("ppp0")?
         .dport(53, Protocol::UDP)
@@ -193,12 +187,6 @@ fn filter() -> Result<()> {
         .drop();
     batch.add(&deny_wan_dslite_admin, MsgType::Add);
 
-    let deny_wan_dslite_diag = Rule::new(&input)?
-        .iface("dslite0")?
-        .dport(12808, Protocol::TCP)
-        .drop();
-    batch.add(&deny_wan_dslite_diag, MsgType::Add);
-
     let deny_wan_dslite_dns = Rule::new(&input)?
         .iface("dslite0")?
         .dport(53, Protocol::UDP)
@@ -228,12 +216,6 @@ fn filter() -> Result<()> {
         .dport(8443, Protocol::TCP)
         .drop();
     batch.add(&deny_wan6in4_admin, MsgType::Add);
-
-    let deny_wan6in4_diag = Rule::new(&input)?
-        .iface("he6in4")?
-        .dport(12808, Protocol::TCP)
-        .drop();
-    batch.add(&deny_wan6in4_diag, MsgType::Add);
 
     let deny_wan6in4_dns = Rule::new(&input)?
         .iface("he6in4")?
