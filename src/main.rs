@@ -235,6 +235,30 @@ fn filter() -> Result<()> {
         .drop();
     batch.add(&deny_wan6in4_dhcpv6, MsgType::Add);
 
+    let deny_untrusted_netdump = Rule::new(&input)?
+        .iface("eth0.20")?
+        .dport(22, Protocol::TCP)
+        .drop();
+    batch.add(&deny_untrusted_netdump, MsgType::Add);
+
+    let deny_untrusted_admin = Rule::new(&input)?
+        .iface("eth0.20")?
+        .dport(8443, Protocol::TCP)
+        .drop();
+    batch.add(&deny_untrusted_admin, MsgType::Add);
+
+    let deny_exposed_netdump = Rule::new(&input)?
+        .iface("eth0.40")?
+        .dport(22, Protocol::TCP)
+        .drop();
+    batch.add(&deny_exposed_netdump, MsgType::Add);
+
+    let deny_exposed_admin = Rule::new(&input)?
+        .iface("eth0.40")?
+        .dport(8443, Protocol::TCP)
+        .drop();
+    batch.add(&deny_exposed_admin, MsgType::Add);
+
     let allow_isolated_dhcp = Rule::new(&input)?
         .iface("eth0.30")?
         .dport(67, Protocol::UDP)
